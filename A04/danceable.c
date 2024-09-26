@@ -1,106 +1,71 @@
 /*----------------------------------------------
  * Author: Kabir Alvaro Hinduja-Obregon
  * Date: 22/09/24
- * Description: 
+ * Description: This Code reads in a lost list from
+ * a csv and stores and uses this song list in the form
+ * of a linked list. We can also print out the most
+ * danceable song in this list, and return the
+ * linked list (/song list) without the recently
+ * printed most dancable song. This cycle can be repeated
+ *  or exited at any moment!
  * ---------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-	typedef struct song{
-        char title[128];
-        char artist[128];
-        int duration;
-        float danceability;
-        float energy;
-        float tempo;
-        float valence;
-}song;
+typedef struct Node {
+    char title[128];
+    char artist[128];
+    int duration; // in milliseconds
+    float danceability;
+    float energy;
+    float tempo;
+    float valence;
+    struct Node *next;
+} Node;
 
-typedef struct node {
-	struct song thisSong;
-	struct node * next;
-} node_t;
-
-void addToList(struct node **head, struct song newSong){
-struct node *newNode = (struct node*)malloc(sizeof(struct node));
-	if (newNode == NULL){
-		printf("Memory error");
-		exit (1);
-	}
-	newNode->thisSong = newSong;
-	newNode->next = *head;
-	*head = newNode;
+void addToList(Node **head, Node newSong) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory error");
+        exit(1);
+    }
+    *newNode = newSong;
+    newNode->next = *head;
+    *head = newNode;
 }
 
+void printSongs(Node *head) {
+    if (head == NULL) {
+        printf("No songs in the list.\n");
+        return;
+    }
 
-void printfunc(struct node *songList, int numSongs) {
-	int length = numSongs;
-	struct node *currentNode = songList;
-	song currentSong = currentNode->thisSong;
-	for (int i = 0; i < length; i++){
-		if (((currentSong.duration % 60000)/1000) < 10){
-			printf("\n%-4d) %-30s artist: %-30s duration: %d:0%-2d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
-					(i), currentSong.title, currentSong.artist,
-					(currentSong.duration/60000), ((currentSong.duration % 60000)/1000),
-					currentSong.danceability,currentSong.energy,currentSong.tempo,currentSong.valence);
-		}
-		else {
-
-		 printf("\n%-4d) %-30s artist: %-30s duration: %d:%-2d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
-                                        (i), currentSong.title, currentSong.artist,
-                                        (currentSong.duration/60000), ((currentSong.duration % 60000)/1000),
-                                        currentSong.danceability,currentSong.energy,currentSong.tempo,currentSong.valence);
+    int index = 0;
+    Node *current = head;
+    while (current != NULL) {
+        printf("%-4d) %-30s artist: %-30s duration: %d:%02d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
+               index++, current->title, current->artist,
+               current->duration / 60000, (current->duration % 60000) / 1000,
+               current->danceability, current->energy, current->tempo, current->valence);
+        current = current->next;
+    }
 }
-currentSong = currentNode->next->thisSong;
-                        currentNode = currentNode->next;
-	}
-		}
 
-/**void deleteMostDanceable(struct node** head, struct song toBeDeleted){
-        struct node *current = *head;
-        printf("\n %s\n\n", current->thisSong.title);
-	struct node *prev = NULL;
-        while (current != NULL && strcmp(current->thisSong.title, toBeDeleted.title)!=0){
-                prev = current;
-                current = current->next;
-        }
-
-        printf("\n %s\n\n", current->thisSong.title);
-        if (current == NULL){
-                printf("Song not found");
-                return;
-        }
-	if (prev == NULL){
-		*head = current->next;
-		printf("PREVISNULL");
-		printf("%sremoving eye of tiger - new head\n", head->thisSong.title);
-	}
-        else{
-		printf("PREVISNOTNULL\n");
-        prev->next = current->next;
-        }
-	
-	
-        //printf("\n %sugkjkjhvkjjkjk\n\n", prev->next->thisSong.title);
-	printf("Deleting song: %s\n", current->thisSong.title);
-        free(current);
-}*/
-
-void deleteMostDanceable(node_t **head) {
+void deleteMostDanceable(Node **head) {
     if (*head == NULL) {
         printf("List is empty. Nothing to delete.\n");
         return;
     }
 
-    node_t *current = *head;
-    node_t *prev = NULL;
-    node_t *mostDanceableNode = current;
-    node_t *mostDanceablePrev = NULL;
+    Node *current = *head;
+    Node *prev = NULL;
+    Node *mostDanceableNode = current;
+    Node *mostDanceablePrev = NULL;
 
-    // Find the most danceable song
     while (current != NULL) {
-        if (current->thisSong.danceability > mostDanceableNode->thisSong.danceability) {
+        if (current->danceability > mostDanceableNode->danceability) {
             mostDanceableNode = current;
             mostDanceablePrev = prev;
         }
@@ -108,167 +73,112 @@ void deleteMostDanceable(node_t **head) {
         current = current->next;
     }
 
-    // If the most danceable song is the head
     if (mostDanceablePrev == NULL) {
         *head = mostDanceableNode->next; // Update head
     } else {
-        mostDanceablePrev->next = mostDanceableNode->next; // Bypass the most danceable node
+        mostDanceablePrev->next = mostDanceableNode->next;
     }
 
-    printf("Deleting song: %s\n", mostDanceableNode->thisSong.title);
-    free(mostDanceableNode); // Free the memory of the deleted node
+    printf("Most danceable song: %-30s artist: %-30s duration: %d:%02d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
+           mostDanceableNode->title, mostDanceableNode->artist,
+           mostDanceableNode->duration / 60000, (mostDanceableNode->duration % 60000) / 1000,
+           mostDanceableNode->danceability, mostDanceableNode->energy, mostDanceableNode->tempo, mostDanceableNode->valence);
+
+    free(mostDanceableNode); // Free memory
 }
 
+void readSongsFromFile(Node **head, const char *filename) {
+    FILE *infile = fopen(filename, "r");
+    if (infile == NULL) {
+        printf("Error: unable to open file %s\n", filename);
+        exit(1);
+    }
 
+    char row[256];
+    fgets(row, sizeof(row), infile);//skipping first line
 
-void printMostDanceable(struct node *songList){
-	float danceCounter = 0.0;
-	struct song currentSong ;
-	for (struct node* n = songList; n->next!= NULL; n = n->next){
-			printf("Title: %-30s Artist: %-30s Danceability: %.2f\n", n->thisSong.title, n->thisSong.artist, 
-					n->thisSong.danceability);
-			if (n->thisSong.danceability > danceCounter){
-			currentSong = n->thisSong;
-			danceCounter = n->thisSong.danceability;	
-			
-	}
-	}
-		
-	printf("The Most Danceable Song\n");
-	if (((currentSong.duration % 60000)/1000) < 10){
-                        printf("\n %-30s artist: %-30s duration: %d:0%-2d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
-                                        currentSong.title, currentSong.artist,
-                                        (currentSong.duration/60000), ((currentSong.duration % 60000)/1000),
-                                        currentSong.danceability,currentSong.energy,currentSong.tempo,currentSong.valence);
-                }
-                else {
+    while (fgets(row, sizeof(row), infile) != NULL) {
+        Node newSong;
+        char *token = strtok(row, ",");
+        int count = 0;
 
-                 printf("\n %-30s artist: %-30s duration: %d:%-2d   danceability: %.02f  energy: %.02f  tempo: %.02f  valence %.02f\n",
-                                         currentSong.title, currentSong.artist,
-                                        (currentSong.duration/60000), ((currentSong.duration % 60000)/1000),
-                                        currentSong.danceability,currentSong.energy,currentSong.tempo,currentSong.valence);
+        while (token != NULL) {
+            switch (count) {
+                case 0:
+                    strncpy(newSong.title, token, sizeof(newSong.title) - 1);
+                    newSong.title[sizeof(newSong.title) - 1] = '\0'; 
+                    break;
+                case 1:
+                    strncpy(newSong.artist, token, sizeof(newSong.artist) - 1);
+                    newSong.artist[sizeof(newSong.artist) - 1] = '\0'; 
+                    break;
+                case 2:
+                    newSong.duration = atoi(token);
+                    break;
+                case 3:
+                    newSong.danceability = atof(token);
+                    break;
+                case 4:
+                    newSong.energy = atof(token);
+                    break;
+                case 5:
+                    newSong.tempo = atof(token);
+                    break;
+                case 6:
+                    newSong.valence = atof(token);
+                    break;
+            }
+            count++;
+            token = strtok(NULL, ",");
+        }
+
+        addToList(head, newSong);
+    }
+
+    fclose(infile);
 }
 
-//	deleteMostDanceable(&songList, currentSong);
-	deleteMostDanceable(&songList);
-}
+void handleUserInput(Node **head) {
+    char choice;
+    while (1) {
+        printf("\npress d to show the most dancable song, anything else to quit:\n");
+        scanf(" %s", &choice); 
+
+        if (choice == 'd') {
+            deleteMostDanceable(head);
+            printf("Songs remaining: ");
+            int count = 0;
+            Node *current = *head;
+            while (current != NULL) {
+                count++;
+                current = current->next;
+            }
+            printf("%d\n", count);
+	    printSongs(*head);
+        } else
+            break;
+        }
+        }
 
 
 int main() {
-	FILE *infile;
-	char row[100];
-	char *token;
+    Node *head = NULL;
 
-	infile = fopen("songlist.csv", "r");
-	if(infile == NULL){
-		printf("Error: unable to open file %s\n", "songList.cvs");
-		exit(1);
-	}
-	
-	node_t * head = NULL;
-	head = (node_t *) malloc(sizeof(node_t));
-	if (head == NULL){
-		return 1;
-		}
-	head->next = NULL;
+    readSongsFromFile(&head, "songlist.csv");
 
-	int count = 0;
-	int firstEntryInt = -1;
+    // Print all songs in list
+    printSongs(head);
 
-	while (fgets(row, 100, infile)!= NULL){
-	firstEntryInt += 1;
-	}
-	
-	if (firstEntryInt < 0){
-		free(head);
-		printf("No Valid Entries.\n");
-		fclose(infile);
-		exit(1);
-		}
+    handleUserInput(&head);
 
-	fseek(infile, 0, SEEK_SET);
-	
-	fgets(row, 100, infile);//reads first line
+    // Free remaining songs in the list
+    while (head != NULL) {
+        Node *temp = head;
+        head = head->next;
+        free(temp);
+    }
 
-	int count1 = 0;
-	
-	while (count1 < firstEntryInt){
-		fgets(row, 100, infile);
-		token = strtok(row, ",");
-		struct song newSong;
-		int count2=0;
-		while(token != NULL){
-			int intSub = 0;
-                	float floatSub = 0.0;
-
-			if (count2 == 0){
-				strcpy(newSong.title, token);
-			}
-			if (count2 == 1){
-				strcpy(newSong.artist, token);
-			}
-
-			if (count2 == 2){
-				intSub = atoi(token);
-				newSong.duration = intSub;
-			}
-			if (count2 == 3){
-				floatSub = atof(token);
-				newSong.danceability = floatSub;
-			}
-			if (count2 == 4){
-				floatSub = atof(token);
-				newSong.energy = floatSub;
-                        }
-			if (count2 == 5){
-				floatSub = atof(token);
-				newSong.tempo = floatSub;
-                        }
-			if (count2 == 6){
-				floatSub = atof(token);
-				newSong.valence = floatSub;
-                        }
-			count2 += 1;
-			token = strtok(NULL, ",");
-
-		} 
-		count1 += 1;
-		addToList(&head, newSong);
-	}
-	printfunc(head, firstEntryInt);
-
-	printf("\nDataset contains %d songs\n",firstEntryInt);
-	int placeholder = 0;
-	while (placeholder == 0){
-		char userInput;
-		printf("Press 'd' to show the most danceable song (any other key to quit): ");
-		scanf(" %c", &userInput);
-		if (userInput == 'd'){
-			if (firstEntryInt ==0){
-				printf("\nDataset contains 0 songs\n");
-			}
-			else{
-			printMostDanceable(head);
-			firstEntryInt = firstEntryInt-1;
-	//		printfunc(head, firstEntryInt);
-			printf("\nDataset contains %d songs\n", firstEntryInt);
-			}
-			
-		}	
-		else{
-		       	placeholder+=1;
-		}
-	}
-
-
-	fclose(infile);
-	for (node_t * n = head; n !=NULL;){
-		node_t *x = n;
-		n = n->next;
-		free(x);
-		}
-  return 0;
+    return 0;
 }
-
 
 
