@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   printf("Enter a phrase: ");
   scanf("%[^\n]%*c", secret_message);
 
-  int message_length = strlen(secret_message);
+  int message_length = strlen(secret_message)+1;
   if (message_length > max_characters){
   printf("Error: Message is too long to fit in the image.\n");
   free(image);
