@@ -1,0 +1,44 @@
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <"read_ppm.h">
+
+struct ppm_pixel {
+unsigned char red;
+unsigned char green;
+unsigned char blue;
+}
+
+struct ppm_pixel* read_ppm(const char* filename, int* width, int* height){
+	FILE* file = fopen(filename, "rb");
+	if (!file) {
+		return NULL;
+}
+
+
+char line[256];
+while (line[0] == '#'){
+fgets(line, sizeof(line), file)
+}
+
+sscanf(line, "%d %d", width, height);
+
+fgets(line, sizeof(line), file);
+int value;
+sscanf(line, "%d", &value);
+
+struct ppm_pixel* pic = malloc((*width) * (*height) * sizeof(struct ppm_pixel));
+if (!pic){
+fclose(file);
+return NULL;
+}
+
+fread(pic, sizeof(struct ppm_pixel), (*width) * (*height), file);
+
+fclose(file);
+return pic;
+
+}
+void free_ppm(struct ppm_pixel* pic);
